@@ -78,9 +78,9 @@ impl Network {
     pub fn from_magic(magic: u32) -> Option<Network> {
         // Note: any new entries here must be added to `magic` below
         match magic {
-            0xD9B4BEF9 => Some(Network::Bitcoin),
-            0x0709110B => Some(Network::Testnet),
-            0x40CF030A => Some(Network::Signet),
+            0xDBB6C0FB => Some(Network::Bitcoin),
+            0xF1C8D2FD => Some(Network::Testnet),
+            0x3B1335EB => Some(Network::Signet),
             0xDAB5BFFA => Some(Network::Regtest),
             _ => None
         }
@@ -100,9 +100,9 @@ impl Network {
     pub fn magic(self) -> u32 {
         // Note: any new entries here must be added to `from_magic` above
         match self {
-            Network::Bitcoin => 0xD9B4BEF9,
-            Network::Testnet => 0x0709110B,
-            Network::Signet  => 0x40CF030A,
+            Network::Bitcoin => 0xDBB6C0FB,
+            Network::Testnet => 0xF1C8D2FD,
+            Network::Signet  => 0x3B1335EB,
             Network::Regtest => 0xDAB5BFFA,
         }
     }

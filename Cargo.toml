@@ -3,8 +3,8 @@ name = "bitcoin"
 version = "0.29.2"
 authors = ["Andrew Poelstra <apoelstra@wpsoftware.net>"]
 license = "CC0-1.0"
-homepage = "https://github.com/rust-bitcoin/rust-bitcoin/"
-repository = "https://github.com/rust-bitcoin/rust-bitcoin/"
+homepage = "https://github.com/monacoin-core/rust-monacoin/"
+repository = "https://github.com/monacoin-core/rust-monacoin/"
 documentation = "https://docs.rs/bitcoin/"
 description = "General purpose library for using and interoperating with Bitcoin and other cryptocurrencies."
 keywords = [ "crypto", "bitcoin" ]
@@ -43,6 +43,9 @@ bitcoinconsensus = { version = "0.20.2-0.5.0", optional = true }
 # Do NOT use this as a feature! Use the `serde` feature instead.
 actual-serde = { package = "serde", version = "1", default-features = false, features = [ "derive", "alloc" ], optional = true }
 hashbrown = { version = "0.8", optional = true }
+
+lyra2 = { version = "0.2.6", default-features = false }
+scrypt = { version = "0.2", default-features = false }
 
 [dev-dependencies]
 serde_json = "<1.0.45"

@@ -19,13 +19,16 @@ use crate::util::hash::bitcoin_merkle_root;
 use crate::hashes::{Hash, HashEngine};
 use crate::hash_types::{Wtxid, BlockHash, TxMerkleNode, WitnessMerkleNode, WitnessCommitment};
 use crate::util::uint::Uint256;
-use crate::consensus::encode::Encodable;
+use crate::consensus::encode::{Encodable, serialize};
+use crate::consensus::params::Params;
 use crate::network::constants::Network;
 use crate::blockdata::transaction::Transaction;
 use crate::blockdata::constants::{max_target, WITNESS_SCALE_FACTOR};
 use crate::blockdata::script;
 use crate::VarInt;
 use crate::internal_macros::impl_consensus_encoding;
+extern crate lyra2;
+extern crate scrypt;
 
 /// Bitcoin block header.
 ///
@@ -69,6 +72,28 @@ impl BlockHeader {
         let mut engine = BlockHash::engine();
         self.consensus_encode(&mut engine).expect("engines don't error");
         BlockHash::from_engine(engine)
+    }
+
+    /// Return the block hash(scrypt & Lyra2rev2).
+    pub fn block_pow_hash(&self, bool_lyra2rev2: bool) -> BlockHash {
+        let mut raw_header_hash = serialize(&self.version);
+        let mut vec_prev_blockhash = serialize(&self.prev_blockhash);
+        vec_prev_blockhash.reverse();
+        raw_header_hash.append(&mut vec_prev_blockhash);
+        let mut vec_merkle_root = serialize(&self.merkle_root);
+        vec_merkle_root.reverse();
+        raw_header_hash.append(&mut vec_merkle_root);
+        raw_header_hash.append(&mut serialize(&self.time));
+        raw_header_hash.append(&mut serialize(&self.bits));
+        raw_header_hash.append(&mut serialize(&self.nonce));
+        if bool_lyra2rev2 {
+            BlockHash::from_slice(&lyra2::lyra2rev2::sum(raw_header_hash)[..]).expect("maybe ok")
+        } else {
+            let params = scrypt::ScryptParams::new(1, 1, 1024).unwrap();
+            let mut output = vec![0; 32];
+            scrypt::scrypt(&raw_header_hash, &raw_header_hash, &params, &mut output).expect("OS RNG should not fail");
+            BlockHash::from_slice(&output[..]).expect("maybe ok")
+        }
     }
 
     /// Computes the target [0, T] that a blockhash must land in to be valid.
@@ -135,14 +160,15 @@ impl BlockHeader {
     }
 
     /// Checks that the proof-of-work for the block is valid, returning the block hash.
-    pub fn validate_pow(&self, required_target: &Uint256) -> Result<BlockHash, util::Error> {
+    pub fn validate_pow(&self, required_target: &Uint256, height: &u32, consensus_params: &Params) -> Result<BlockHash, util::Error> {
         let target = &self.target();
         if target != required_target {
             return Err(BlockBadTarget);
         }
         let block_hash = self.block_hash();
+        let data: [u8; 32] = self.block_pow_hash(height >= &consensus_params.switch_lyra2rev2_dgwblock).into_inner(); //TODO monacoin is OK?
         let mut ret = [0u64; 4];
-        util::endian::bytes_to_u64_slice_le(block_hash.as_inner(), &mut ret);
+        util::endian::bytes_to_u64_slice_le(&data, &mut ret);
         let hash = &Uint256(ret);
         if hash <= target { Ok(block_hash) } else { Err(BlockBadProofOfWork) }
     }

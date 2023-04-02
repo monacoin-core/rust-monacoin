@@ -19,7 +19,7 @@ use crate::consensus::{encode, Encodable};
 pub use self::message_signing::{MessageSignature, MessageSignatureError};
 
 /// The prefix for signed messages using Bitcoin's message signing protocol.
-pub const BITCOIN_SIGNED_MSG_PREFIX: &[u8] = b"\x18Bitcoin Signed Message:\n";
+pub const BITCOIN_SIGNED_MSG_PREFIX: &[u8] = b"\x19Monacoin Signed Message:\n";
 
 #[cfg(feature = "secp-recovery")]
 mod message_signing {

@@ -865,9 +865,9 @@ impl fmt::Display for Address {
             Network::Testnet | Network::Signet | Network::Regtest => SCRIPT_ADDRESS_PREFIX_TEST,
         };
         let bech32_hrp = match self.network {
-            Network::Bitcoin => "bc",
-            Network::Testnet | Network::Signet => "tb",
-            Network::Regtest => "bcrt",
+            Network::Bitcoin => "mona",
+            Network::Testnet | Network::Signet => "tmona",
+            Network::Regtest => "rmona",
         };
         let encoding = AddressEncoding {
             payload: &self.payload,
@@ -909,9 +909,9 @@ impl FromStr for Address {
         // try bech32
         let bech32_network = match find_bech32_prefix(s) {
             // note that upper or lowercase is allowed but NOT mixed case
-            "bc" | "BC" => Some(Network::Bitcoin),
-            "tb" | "TB" => Some(Network::Testnet), // this may also be signet
-            "bcrt" | "BCRT" => Some(Network::Regtest),
+            "mona" | "MONA" => Some(Network::Bitcoin),
+            "tmona" | "TMONA" => Some(Network::Testnet), // this may also be signet
+            "rmona" | "RMONA" => Some(Network::Regtest),
             _ => None,
         };
         if let Some(network) = bech32_network {

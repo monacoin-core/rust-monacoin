@@ -27,7 +27,7 @@ use crate::internal_macros::{impl_array_newtype, impl_bytes_newtype};
 /// How many satoshis are in "one bitcoin"
 pub const COIN_VALUE: u64 = 100_000_000;
 /// How many seconds between blocks we expect on average
-pub const TARGET_BLOCK_SPACING: u32 = 600;
+pub const TARGET_BLOCK_SPACING: u32 = 90;
 /// How many blocks between diffchanges
 pub const DIFFCHANGE_INTERVAL: u32 = 2016;
 /// How much time on average should occur between diffchanges
@@ -41,30 +41,30 @@ pub const WITNESS_SCALE_FACTOR: usize = 4;
 /// The maximum allowed number of signature check operations in a block
 pub const MAX_BLOCK_SIGOPS_COST: i64 = 80_000;
 /// Mainnet (bitcoin) pubkey address prefix.
-pub const PUBKEY_ADDRESS_PREFIX_MAIN: u8 = 0; // 0x00
+pub const PUBKEY_ADDRESS_PREFIX_MAIN: u8 = 50; // 0x32
 /// Mainnet (bitcoin) script address prefix.
-pub const SCRIPT_ADDRESS_PREFIX_MAIN: u8 = 5; // 0x05
+pub const SCRIPT_ADDRESS_PREFIX_MAIN: u8 = 55; // 0x37
 /// Test (tesnet, signet, regtest) pubkey address prefix.
 pub const PUBKEY_ADDRESS_PREFIX_TEST: u8 = 111; // 0x6f
 /// Test (tesnet, signet, regtest) script address prefix.
-pub const SCRIPT_ADDRESS_PREFIX_TEST: u8 = 196; // 0xc4
+pub const SCRIPT_ADDRESS_PREFIX_TEST: u8 = 117; // 0x75
 /// The maximum allowed script size.
 pub const MAX_SCRIPT_ELEMENT_SIZE: usize = 520;
 /// How may blocks between halvings.
-pub const SUBSIDY_HALVING_INTERVAL: u32 = 210_000;
+pub const SUBSIDY_HALVING_INTERVAL: u32 = 1_051_200;
 /// Maximum allowed value for an integer in Script.
 pub const MAX_SCRIPTNUM_VALUE: u32 = 0x80000000; // 2^31
 
 /// In Bitcoind this is insanely described as ~((u256)0 >> 32)
 pub fn max_target(_: Network) -> Uint256 {
-    Uint256::from_u64(0xFFFF).unwrap() << 208
+    Uint256::from_u64(0x0FFFFFFF).unwrap() << 208
 }
 
 /// The maximum value allowed in an output (useful for sanity checking,
 /// since keeping everything below this value should prevent overflows
 /// if you are doing anything remotely sane with monetary values).
 pub fn max_money(_: Network) -> u64 {
-    21_000_000 * COIN_VALUE
+    105_120_000 * COIN_VALUE
 }
 
 /// Constructs and returns the coinbase (and only) transaction of the Bitcoin genesis block
@@ -80,7 +80,7 @@ fn bitcoin_genesis_tx() -> Transaction {
     // Inputs
     let in_script = script::Builder::new().push_scriptint(486604799)
                                           .push_scriptint(4)
-                                          .push_slice(b"The Times 03/Jan/2009 Chancellor on brink of second bailout for banks")
+                                          .push_slice(b"Dec. 31th 2013 Japan, The winning numbers of the 2013 Year-End Jumbo Lottery:23-130916")
                                           .into_script();
     ret.input.push(TxIn {
         previous_output: OutPoint::null(),
@@ -91,7 +91,7 @@ fn bitcoin_genesis_tx() -> Transaction {
 
     // Outputs
     let script_bytes: Result<Vec<u8>, hex::Error> =
-        HexIterator::new("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f").unwrap()
+        HexIterator::new("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9").unwrap()
             .collect();
     let out_script = script::Builder::new()
         .push_slice(script_bytes.unwrap().as_slice())
@@ -118,9 +118,9 @@ pub fn genesis_block(network: Network) -> Block {
                     version: 1,
                     prev_blockhash: Hash::all_zeros(),
                     merkle_root,
-                    time: 1231006505,
-                    bits: 0x1d00ffff,
-                    nonce: 2083236893
+                    time: 1388479472,
+                    bits: 0x1e0ffff0,
+                    nonce: 1234534
                 },
                 txdata,
             }
@@ -131,9 +131,9 @@ pub fn genesis_block(network: Network) -> Block {
                     version: 1,
                     prev_blockhash: Hash::all_zeros(),
                     merkle_root,
-                    time: 1296688602,
-                    bits: 0x1d00ffff,
-                    nonce: 414098458
+                    time: 1488924140,
+                    bits: 0x1e0ffff0,
+                    nonce: 2122860
                 },
                 txdata,
             }
@@ -144,9 +144,9 @@ pub fn genesis_block(network: Network) -> Block {
                     version: 1,
                     prev_blockhash: Hash::all_zeros(),
                     merkle_root,
-                    time: 1598918400,
-                    bits: 0x1e0377ae,
-                    nonce: 52613770
+                    time: 1488924140,
+                    bits: 0x1e0ffff0,
+                    nonce: 2122860
                 },
                 txdata,
             }
@@ -159,7 +159,7 @@ pub fn genesis_block(network: Network) -> Block {
                     merkle_root,
                     time: 1296688602,
                     bits: 0x207fffff,
-                    nonce: 2
+                    nonce: 1
                 },
                 txdata,
             }
@@ -168,10 +168,10 @@ pub fn genesis_block(network: Network) -> Block {
 }
 
 // Mainnet value can be verified at https://github.com/lightning/bolts/blob/master/00-introduction.md
-const GENESIS_BLOCK_HASH_BITCOIN: [u8; 32] = [111, 226, 140, 10, 182, 241, 179, 114, 193, 166, 162, 70, 174, 99, 247, 79, 147, 30, 131, 101, 225, 90, 8, 156, 104, 214, 25, 0, 0, 0, 0, 0];
-const GENESIS_BLOCK_HASH_TESTNET: [u8; 32] = [67, 73, 127, 215, 248, 38, 149, 113, 8, 244, 163, 15, 217, 206, 195, 174, 186, 121, 151, 32, 132, 233, 14, 173, 1, 234, 51, 9, 0, 0, 0, 0];
-const GENESIS_BLOCK_HASH_SIGNET: [u8; 32] = [246, 30, 238, 59, 99, 163, 128, 164, 119, 160, 99, 175, 50, 178, 187, 201, 124, 159, 249, 240, 31, 44, 66, 37, 233, 115, 152, 129, 8, 0, 0, 0];
-const GENESIS_BLOCK_HASH_REGTEST: [u8; 32] = [6, 34, 110, 70, 17, 26, 11, 89, 202, 175, 18, 96, 67, 235, 91, 191, 40, 195, 79, 58, 94, 51, 42, 31, 199, 178, 183, 60, 241, 136, 145, 15];
+const GENESIS_BLOCK_HASH_BITCOIN: [u8; 32] = [182, 139, 140, 65, 13, 46, 164, 175, 215, 79, 181, 110, 55, 11, 252, 27, 237, 249, 41, 225, 69, 56, 150, 201, 231, 157, 209, 22, 1, 28, 159, 255];
+const GENESIS_BLOCK_HASH_TESTNET: [u8; 32] = [178, 224, 97, 16, 50, 156, 68, 143, 21, 120, 228, 138, 37, 168, 139, 99, 157, 207, 170, 166, 166, 178, 151, 208, 198, 224, 59, 186, 206, 6, 177, 162];
+const GENESIS_BLOCK_HASH_SIGNET: [u8; 32] = [178, 224, 97, 16, 50, 156, 68, 143, 21, 120, 228, 138, 37, 168, 139, 99, 157, 207, 170, 166, 166, 178, 151, 208, 198, 224, 59, 186, 206, 6, 177, 162];
+const GENESIS_BLOCK_HASH_REGTEST: [u8; 32] = [156, 162, 144, 165, 58, 71, 73, 167, 200, 114, 48, 111, 59, 37, 53, 74, 7, 76, 6, 252, 194, 190, 94, 154, 178, 205, 47, 124, 157, 166, 67, 117];
 
 /// The uniquely identifying hash of the target blockchain.
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
